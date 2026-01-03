@@ -23,6 +23,10 @@ void NimBLEServerController::initServer(const String infoString) {
     altControlChar = pService->createCharacteristic(ALT_CONTROL_CHAR_UUID, NIMBLE_PROPERTY::WRITE);
     altControlChar->setCallbacks(this); // Use this class as the callback handler
 
+    // Heater Output Select Characteristic (Client selects main/alt heater output)
+    heaterOutputSelectChar = pService->createCharacteristic(HEATER_OUTPUT_SELECT_UUID, NIMBLE_PROPERTY::WRITE);
+    heaterOutputSelectChar->setCallbacks(this); // Use this class as the callback handler
+
     // Ping Characteristic (Client writes ping, Server reads)
     pingChar = pService->createCharacteristic(PING_CHAR_UUID, NIMBLE_PROPERTY::WRITE);
     pingChar->setCallbacks(this); // Use this class as the callback handler
@@ -156,6 +160,9 @@ void NimBLEServerController::registerAdvancedOutputControlCallback(const advance
 }
 
 void NimBLEServerController::registerAltControlCallback(const pin_control_callback_t &callback) { altControlCallback = callback; }
+void NimBLEServerController::registerHeaterOutputSelectCallback(const pin_control_callback_t &callback) {
+    heaterOutputSelectCallback = callback;
+}
 void NimBLEServerController::registerPingCallback(const ping_callback_t &callback) { pingCallback = callback; }
 void NimBLEServerController::registerAutotuneCallback(const autotune_callback_t &callback) { autotuneCallback = callback; }
 void NimBLEServerController::registerPressureScaleCallback(const float_callback_t &callback) { pressureScaleCallback = callback; }
@@ -218,6 +225,12 @@ void NimBLEServerController::onWrite(NimBLECharacteristic *pCharacteristic) {
         ESP_LOGV(LOG_TAG, "Received ALT control: %s", pinState ? "ON" : "OFF");
         if (altControlCallback != nullptr) {
             altControlCallback(pinState);
+        }
+    } else if (pCharacteristic->getUUID().equals(NimBLEUUID(HEATER_OUTPUT_SELECT_UUID))) {
+        bool useAlt = (pCharacteristic->getValue()[0] == '1');
+        ESP_LOGV(LOG_TAG, "Received heater output select: %s", useAlt ? "ALT" : "MAIN");
+        if (heaterOutputSelectCallback != nullptr) {
+            heaterOutputSelectCallback(useAlt);
         }
     } else if (pCharacteristic->getUUID().equals(NimBLEUUID(PING_CHAR_UUID))) {
         ESP_LOGV(LOG_TAG, "Received ping");

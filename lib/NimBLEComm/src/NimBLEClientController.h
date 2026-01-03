@@ -14,6 +14,7 @@ class NimBLEClientController : public NimBLEAdvertisedDeviceCallbacks, NimBLECli
 
     void sendOutputControl(bool valve, float pumpSetpoint, float boilerSetpoint);
     void sendAltControl(bool pinState);
+    void sendHeaterOutputSelect(bool useAlt);
     void sendPing();
     void sendAutotune(int testTime, int samples);
     void sendPidSettings(const String &pid);
@@ -57,6 +58,7 @@ class NimBLEClientController : public NimBLEAdvertisedDeviceCallbacks, NimBLECli
     NimBLERemoteCharacteristic *volumetricMeasurementChar = nullptr;
     NimBLERemoteCharacteristic *volumetricTareChar = nullptr;
     NimBLERemoteCharacteristic *ledControlChar = nullptr;
+    NimBLERemoteCharacteristic *heaterOutputSelectChar = nullptr;
     NimBLERemoteCharacteristic *tofMeasurementChar = nullptr;
     NimBLEAdvertisedDevice *serverDevice = nullptr;
     bool readyForConnection = false;

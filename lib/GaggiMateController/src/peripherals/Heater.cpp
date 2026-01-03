@@ -66,6 +66,17 @@ void Heater::setTunings(float Kp, float Ki, float Kd) {
     }
 }
 
+void Heater::setOutputPin(uint8_t pin) {
+    if (heaterPin == pin) {
+        return;
+    }
+    digitalWrite(heaterPin, LOW);
+    heaterPin = pin;
+    pinMode(heaterPin, OUTPUT);
+    relayStatus = false;
+    nextSwitchTime = 0;
+}
+
 
 void Heater::setThermalFeedforward(float *pumpFlowPtr, float incomingWaterTemp, int *valveStatusPtr) {
     pumpFlowRate = pumpFlowPtr;

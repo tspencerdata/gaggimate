@@ -511,6 +511,14 @@ void Controller::updateControl() {
         targetTemp = targetTemp + static_cast<float>(settings.getTemperatureOffset());
     }
 
+    const bool useAltSteamBoiler = settings.getAltRelayFunction() == ALT_RELAY_STEAM_BOILER && mode == MODE_STEAM;
+    const float heaterSetpoint = targetTemp;
+
+    if (clientController.isConnected() && useAltSteamBoiler != usingAltSteamBoiler) {
+        clientController.sendHeaterOutputSelect(useAltSteamBoiler);
+        usingAltSteamBoiler = useAltSteamBoiler;
+    }
+
     // Check if alt relay should be active based on process type and alt relay function setting
     bool altRelayActive = false;
     if (isActive() && currentProcess->isAltRelayActive()) {
@@ -524,13 +532,13 @@ void Controller::updateControl() {
         if (currentProcess->getType() == MODE_STEAM) {
             targetPressure = settings.getSteamPumpCutoff();
             targetFlow = currentProcess->getPumpValue() * 0.1f;
-            clientController.sendAdvancedOutputControl(false, targetTemp, false, targetPressure, targetFlow);
+            clientController.sendAdvancedOutputControl(false, heaterSetpoint, false, targetPressure, targetFlow);
             return;
         }
         if (currentProcess->getType() == MODE_BREW) {
             auto *brewProcess = static_cast<BrewProcess *>(currentProcess);
             if (brewProcess->isAdvancedPump()) {
-                clientController.sendAdvancedOutputControl(brewProcess->isRelayActive(), targetTemp,
+                clientController.sendAdvancedOutputControl(brewProcess->isRelayActive(), heaterSetpoint,
                                                            brewProcess->getPumpTarget() == PumpTarget::PUMP_TARGET_PRESSURE,
                                                            brewProcess->getPumpPressure(), brewProcess->getPumpFlow());
                 targetPressure = brewProcess->getPumpPressure();
@@ -542,7 +550,7 @@ void Controller::updateControl() {
     targetPressure = 0.0f;
     targetFlow = 0.0f;
     clientController.sendOutputControl(isActive() && currentProcess->isRelayActive(),
-                                       isActive() ? currentProcess->getPumpValue() : 0, targetTemp);
+                                       isActive() ? currentProcess->getPumpValue() : 0, heaterSetpoint);
 }
 
 void Controller::activate() {
@@ -784,3 +792,4 @@ void Controller::loopTask(void *arg) {
         xTaskDelayUntil(&lastWake, pdMS_TO_TICKS(controller->getMode() == MODE_STANDBY ? 1000 : 100));
     }
 }
+

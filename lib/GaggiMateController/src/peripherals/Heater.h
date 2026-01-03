@@ -25,6 +25,7 @@ class Heater {
     void setSetpoint(float setpoint);
     void setTunings(float Kp, float Ki, float Kd);
     void autotune(int goal, int windowSize);
+    void setOutputPin(uint8_t pin);
     
     
     // Thermal feedforward control

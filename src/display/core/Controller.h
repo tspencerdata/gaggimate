@@ -163,6 +163,7 @@ class Controller {
     bool steamReady = false;
     bool sdcard = false;
     int error = 0;
+    bool usingAltSteamBoiler = false;
 
     // Bluetooth scale connection monitoring
     VolumetricMeasurementSource currentVolumetricSource = VolumetricMeasurementSource::INACTIVE;

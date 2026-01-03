@@ -704,9 +704,7 @@ export function Settings() {
               >
                 <option value={0}>None</option>
                 <option value={1}>Grind</option>
-                <option value={2} disabled className='text-gray-400'>
-                  Steam Boiler (Coming Soon)
-                </option>
+                <option value={2}>Steam Boiler</option>
               </select>
             </div>
           </Card>

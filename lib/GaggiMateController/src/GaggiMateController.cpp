@@ -122,6 +122,11 @@ void GaggiMateController::setup() {
             dimmedPump->setValveState(valve);
         });
     _ble.registerAltControlCallback([this](bool state) { this->alt->set(state); });
+    _ble.registerHeaterOutputSelectCallback([this](bool useAlt) {
+        if (this->heater != nullptr) {
+            this->heater->setOutputPin(useAlt ? _config.altPin : _config.heaterPin);
+        }
+    });
     _ble.registerPidControlCallback([this](float Kp, float Ki, float Kd, float Kf) { 
         this->heater->setTunings(Kp, Ki, Kd); 
         
