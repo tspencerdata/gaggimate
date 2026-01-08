@@ -15,7 +15,7 @@ class SteamProcess : public Process {
         started = millis();
     }
 
-    bool isRelayActive() override { return false; };
+    bool isRelayActive() override { return true; };
 
     bool isAltRelayActive() override { return false; };
 
