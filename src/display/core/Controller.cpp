@@ -524,7 +524,7 @@ void Controller::updateControl() {
         if (currentProcess->getType() == MODE_STEAM) {
             targetPressure = settings.getSteamPumpCutoff();
             targetFlow = currentProcess->getPumpValue() * 0.1f;
-            clientController.sendAdvancedOutputControl(false, targetTemp, false, targetPressure, targetFlow);
+            clientController.sendAdvancedOutputControl(currentProcess->isRelayActive(), targetTemp, false, targetPressure, targetFlow);
             return;
         }
         if (currentProcess->getType() == MODE_BREW) {
