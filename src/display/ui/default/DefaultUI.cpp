@@ -469,7 +469,7 @@ void DefaultUI::setupReactive() {
                                   lv_label_set_text_fmt(ui_InitScreen_mainLabel, "Updating...");
                               } else if (error) {
                                   if (controller->getError() == ERROR_CODE_RUNAWAY) {
-                                      lv_label_set_text_fmt(ui_InitScreen_mainLabel, "Temperature error, please restart");
+                                      lv_label_set_text_fmt(ui_InitScreen_mainLabel, "Temperature error (%d°C), please restart", currentTemp);
                                   }
                               } else if (autotuning) {
                                   lv_label_set_text_fmt(ui_InitScreen_mainLabel, "Autotuning...");
