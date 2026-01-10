@@ -469,7 +469,38 @@ void DefaultUI::setupReactive() {
                                   lv_label_set_text_fmt(ui_InitScreen_mainLabel, "Updating...");
                               } else if (error) {
                                   if (controller->getError() == ERROR_CODE_RUNAWAY) {
-                                      lv_label_set_text_fmt(ui_InitScreen_mainLabel, "Temperature error (%d°C), please restart", currentTemp);
+                                      // Calculate min/max and build message with recent temps
+                                      char msg[64];
+                                      const int maxLen = 42;
+                                      const int samples10s = 10 * 1000 / TEMP_HISTORY_INTERVAL;
+
+                                      int minTemp = currentTemp;
+                                      int maxTemp = currentTemp;
+                                      for (int i = 0; i < samples10s && i < TEMP_HISTORY_LENGTH; i++) {
+                                          int idx = (tempHistoryIndex - 1 - i + TEMP_HISTORY_LENGTH) % TEMP_HISTORY_LENGTH;
+                                          int temp = tempHistory[idx];
+                                          if (temp > 0) {
+                                              if (temp < minTemp) minTemp = temp;
+                                              if (temp > maxTemp) maxTemp = temp;
+                                          }
+                                      }
+
+                                      int pos = snprintf(msg, sizeof(msg), "Restart! Temps %d, %d: ", maxTemp, minTemp);
+                                      for (int i = 0; i < samples10s && i < TEMP_HISTORY_LENGTH; i++) {
+                                          int idx = (tempHistoryIndex - 1 - i + TEMP_HISTORY_LENGTH) % TEMP_HISTORY_LENGTH;
+                                          int temp = tempHistory[idx];
+                                          if (temp > 0) {
+                                              char tempStr[8];
+                                              int tempLen = snprintf(tempStr, sizeof(tempStr), "%d ", temp);
+                                              if (pos + tempLen < maxLen) {
+                                                  strcat(msg, tempStr);
+                                                  pos += tempLen;
+                                              } else {
+                                                  break;
+                                              }
+                                          }
+                                      }
+                                      lv_label_set_text(ui_InitScreen_mainLabel, msg);
                                   }
                               } else if (autotuning) {
                                   lv_label_set_text_fmt(ui_InitScreen_mainLabel, "Autotuning...");
