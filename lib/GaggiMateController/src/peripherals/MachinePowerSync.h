@@ -17,6 +17,7 @@ class MachinePowerSync {
     uint8_t powerLedSensePin;
     uint8_t powerButtonPin;
 
+    bool desiredKnown = false;
     bool desiredOn = false;
     bool pressActive = false;
     uint32_t pressStartMs = 0;

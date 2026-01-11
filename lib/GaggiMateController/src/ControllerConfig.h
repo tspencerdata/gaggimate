@@ -34,7 +34,7 @@ struct ControllerConfig {
     uint8_t maxMisoPin;
 
     // Repurposed pins:
-    // - powerLedSensePin reads the top switch LED line (HIGH = has power)
+    // - powerLedSensePin reads the top switch LED line (active-low on controller PCB: LOW = has power)
     // - powerButtonPin momentarily drives the top switch button input (default LOW)
     uint8_t powerLedSensePin;
     uint8_t powerButtonPin;

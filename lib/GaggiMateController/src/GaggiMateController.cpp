@@ -17,6 +17,15 @@ GaggiMateController::GaggiMateController(String version) : _version(std::move(ve
 }
 
 void GaggiMateController::setup() {
+    // Ensure power button output is 0V as early as possible (even during the startup delay).
+    // GPIO48 is repurposed as the power button "press" output, and should idle LOW.
+    digitalWrite(48, LOW);
+    pinMode(48, OUTPUT);
+    // GPIO38 is repurposed as the power LED sense input.
+    // Note: on the controller PCB this net (/BTN_BREW) has a 10K pull-up to +3.3V (R20),
+    // so it will read HIGH when nothing is connected. We treat LOW as "LED has power".
+    pinMode(38, INPUT);
+
     delay(5000);
     detectBoard();
     detectAddon();

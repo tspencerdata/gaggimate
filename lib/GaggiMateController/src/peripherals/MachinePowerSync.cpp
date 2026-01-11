@@ -9,17 +9,25 @@ MachinePowerSync::MachinePowerSync(uint8_t powerLedSensePin, uint8_t powerButton
     : powerLedSensePin(powerLedSensePin), powerButtonPin(powerButtonPin) {}
 
 void MachinePowerSync::setup() {
-    pinMode(powerLedSensePin, INPUT_PULLDOWN);
+    // Controller PCB has a physical pull-up on this net (/BTN_BREW). Don't enable an internal pulldown here,
+    // otherwise you'll create a resistor divider and measure a mid-level voltage.
+    pinMode(powerLedSensePin, INPUT);
 
-    pinMode(powerButtonPin, OUTPUT);
     digitalWrite(powerButtonPin, LOW);
+    pinMode(powerButtonPin, OUTPUT);
 
     nextCheckMs = 0;
 }
 
-void MachinePowerSync::setDesiredOn(const bool desiredOn) { this->desiredOn = desiredOn; }
+void MachinePowerSync::setDesiredOn(const bool desiredOn) {
+    this->desiredOn = desiredOn;
+    desiredKnown = true;
+}
 
-bool MachinePowerSync::readPowerLed() const { return digitalRead(powerLedSensePin) == HIGH; }
+bool MachinePowerSync::readPowerLed() const {
+    // Active-low: LOW means the external sense circuit is pulling the line down (LED line has power).
+    return digitalRead(powerLedSensePin) == LOW;
+}
 
 bool MachinePowerSync::timeReached(const uint32_t nowMs, const uint32_t targetMs) {
     return static_cast<int32_t>(nowMs - targetMs) >= 0;
@@ -39,6 +47,11 @@ void MachinePowerSync::stopMomentaryPress() {
 
 void MachinePowerSync::loop() {
     const uint32_t nowMs = millis();
+
+    // Don't press anything until we've received at least one desired state update from the controller.
+    if (!desiredKnown) {
+        return;
+    }
 
     if (pressActive) {
         if (timeReached(nowMs, pressStartMs + PRESS_MS)) {
