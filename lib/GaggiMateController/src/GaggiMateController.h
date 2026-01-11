@@ -2,10 +2,10 @@
 #define GAGGIMATECONTROLLER_H
 #include "ControllerConfig.h"
 #include "NimBLEServerController.h"
-#include <peripherals/DigitalInput.h>
 #include <peripherals/DistanceSensor.h>
 #include <peripherals/Heater.h>
 #include <peripherals/LedController.h>
+#include <peripherals/MachinePowerSync.h>
 #include <peripherals/Max31855Thermocouple.h>
 #include <peripherals/PressureSensor.h>
 #include <peripherals/Pump.h>
@@ -43,8 +43,7 @@ class GaggiMateController {
     SimpleRelay *valve = nullptr;
     SimpleRelay *alt = nullptr;
     Pump *pump = nullptr;
-    DigitalInput *brewBtn = nullptr;
-    DigitalInput *steamBtn = nullptr;
+    MachinePowerSync *machinePowerSync = nullptr;
     PressureSensor *pressureSensor = nullptr;
     LedController *ledController = nullptr;
     DistanceSensor *distanceSensor = nullptr;

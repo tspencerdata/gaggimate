@@ -37,8 +37,7 @@ void GaggiMateController::setup() {
     } else {
         pump = new SimplePump(_config.pumpPin, _config.pumpOn, _config.capabilites.ssrPump ? 1000.0f : 5000.0f);
     }
-    this->brewBtn = new DigitalInput(_config.brewButtonPin, [this](const bool state) { _ble.sendBrewBtnState(state); });
-    this->steamBtn = new DigitalInput(_config.steamButtonPin, [this](const bool state) { _ble.sendSteamBtnState(state); });
+    this->machinePowerSync = new MachinePowerSync(_config.powerLedSensePin, _config.powerButtonPin);
 
     // 4-Pin peripheral port
     if (!Wire.begin(_config.sunriseSdaPin, _config.sunriseSclPin, 400000)) {
@@ -68,8 +67,7 @@ void GaggiMateController::setup() {
     this->valve->setup();
     this->alt->setup();
     this->pump->setup();
-    this->brewBtn->setup();
-    this->steamBtn->setup();
+    this->machinePowerSync->setup();
     if (_config.capabilites.pressure) {
         pressureSensor->setup();
         _ble.registerPressureScaleCallback([this](float scale) { this->pressureSensor->setScale(scale); });
@@ -96,6 +94,7 @@ void GaggiMateController::setup() {
         this->pump->setPower(pumpSetpoint);
         this->valve->set(valve);
         this->heater->setSetpoint(heaterSetpoint);
+        this->machinePowerSync->setDesiredOn(heaterSetpoint > 0.0f);
         if (!_config.capabilites.dimming) {
             return;
         }
@@ -110,6 +109,7 @@ void GaggiMateController::setup() {
             }
             this->valve->set(valve);
             this->heater->setSetpoint(heaterSetpoint);
+            this->machinePowerSync->setDesiredOn(heaterSetpoint > 0.0f);
             if (!_config.capabilites.dimming) {
                 return;
             }
@@ -157,6 +157,7 @@ void GaggiMateController::loop() {
     if (lastPingTime < now && (now - lastPingTime) / 1000 > PING_TIMEOUT_SECONDS) {
         handlePingTimeout();
     }
+    machinePowerSync->loop();
     sendSensorData();
     delay(250);
 }
@@ -199,6 +200,7 @@ void GaggiMateController::handlePingTimeout() {
     ESP_LOGE(LOG_TAG, "Ping timeout detected. Turning off heater and pump for safety.\n");
     // Turn off the heater and pump as a safety measure
     this->heater->setSetpoint(0);
+    this->machinePowerSync->setDesiredOn(false);
     this->pump->setPower(0);
     this->valve->set(false);
     this->alt->set(false);
@@ -209,6 +211,7 @@ void GaggiMateController::thermalRunawayShutdown() {
     ESP_LOGE(LOG_TAG, "Thermal runaway detected! Turning off heater and pump!\n");
     // Turn off the heater and pump immediately
     this->heater->setSetpoint(0);
+    this->machinePowerSync->setDesiredOn(false);
     this->pump->setPower(0);
     this->valve->set(false);
     this->alt->set(false);

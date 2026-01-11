@@ -33,8 +33,11 @@ struct ControllerConfig {
     uint8_t maxCsPin;
     uint8_t maxMisoPin;
 
-    uint8_t brewButtonPin;
-    uint8_t steamButtonPin;
+    // Repurposed pins:
+    // - powerLedSensePin reads the top switch LED line (HIGH = has power)
+    // - powerButtonPin momentarily drives the top switch button input (default LOW)
+    uint8_t powerLedSensePin;
+    uint8_t powerButtonPin;
 
     uint8_t scaleSclPin;
     uint8_t scaleSdaPin;
@@ -64,8 +67,8 @@ const ControllerConfig GM_STANDARD_REV_1X = {.name = "GaggiMate Standard Rev 1.x
                                              .maxSckPin = 6,
                                              .maxCsPin = 7,
                                              .maxMisoPin = 4,
-                                             .brewButtonPin = 38,
-                                             .steamButtonPin = 48,
+                                             .powerLedSensePin = 38,
+                                             .powerButtonPin = 48,
                                              .scaleSclPin = 17,
                                              .scaleSdaPin = 18,
                                              .scaleSda1Pin = 39,
@@ -94,8 +97,8 @@ const ControllerConfig GM_STANDARD_REV_2X = {.name = "GaggiMate Standard Rev 2.x
                                              .maxSckPin = 6,
                                              .maxCsPin = 7,
                                              .maxMisoPin = 4,
-                                             .brewButtonPin = 38,
-                                             .steamButtonPin = 48,
+                                             .powerLedSensePin = 38,
+                                             .powerButtonPin = 48,
                                              .scaleSclPin = 17,
                                              .scaleSdaPin = 18,
                                              .scaleSda1Pin = 39,
@@ -129,8 +132,8 @@ const ControllerConfig GM_PRO_REV_1x = {.name = "GaggiMate Pro Rev 1.x",
                                         .maxSckPin = 6,
                                         .maxCsPin = 7,
                                         .maxMisoPin = 4,
-                                        .brewButtonPin = 38,
-                                        .steamButtonPin = 48,
+                                        .powerLedSensePin = 38,
+                                        .powerButtonPin = 48,
                                         .scaleSclPin = 17,
                                         .scaleSdaPin = 18,
                                         .scaleSda1Pin = 39,
@@ -164,8 +167,8 @@ const ControllerConfig GM_PRO_LEGO = {.name = "GaggiMate Pro Lego Build",
                                       .maxSckPin = 6,
                                       .maxCsPin = 7,
                                       .maxMisoPin = 4,
-                                      .brewButtonPin = 38,
-                                      .steamButtonPin = 48,
+                                      .powerLedSensePin = 38,
+                                      .powerButtonPin = 48,
                                       .scaleSclPin = 17,
                                       .scaleSdaPin = 18,
                                       .scaleSda1Pin = 39,
@@ -199,8 +202,8 @@ const ControllerConfig GM_PRO_REV_11 = {.name = "GaggiMate Pro Rev 1.1",
                                         .maxSckPin = 6,
                                         .maxCsPin = 7,
                                         .maxMisoPin = 4,
-                                        .brewButtonPin = 38,
-                                        .steamButtonPin = 48,
+                                        .powerLedSensePin = 38,
+                                        .powerButtonPin = 48,
                                         .scaleSclPin = 17,
                                         .scaleSdaPin = 18,
                                         .scaleSda1Pin = 39,
