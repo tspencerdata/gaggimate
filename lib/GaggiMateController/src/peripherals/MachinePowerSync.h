@@ -22,6 +22,8 @@ class MachinePowerSync {
     bool pressActive = false;
     uint32_t pressStartMs = 0;
     uint32_t nextCheckMs = 0;
+    uint32_t pressCooldownUntilMs = 0;
+    uint8_t consecutiveMismatchCount = 0;
 
     bool readPowerLed() const;
     void startMomentaryPress(uint32_t nowMs);

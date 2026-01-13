@@ -1,8 +1,10 @@
 #include "MachinePowerSync.h"
 
 namespace {
-constexpr uint32_t CHECK_INTERVAL_MS = 5000;
-constexpr uint32_t PRESS_MS = 2000;
+constexpr uint32_t CHECK_INTERVAL_MS = 250;
+constexpr uint32_t PRESS_MS = 1000;
+constexpr uint32_t POST_PRESS_COOLDOWN_MS = 5000;
+constexpr uint8_t MISMATCH_REQUIRED_COUNT = 2;
 } // namespace
 
 MachinePowerSync::MachinePowerSync(uint8_t powerLedSensePin, uint8_t powerButtonPin)
@@ -17,6 +19,8 @@ void MachinePowerSync::setup() {
     pinMode(powerButtonPin, OUTPUT);
 
     nextCheckMs = 0;
+    pressCooldownUntilMs = 0;
+    consecutiveMismatchCount = 0;
 }
 
 void MachinePowerSync::setDesiredOn(const bool desiredOn) {
@@ -57,6 +61,8 @@ void MachinePowerSync::loop() {
         if (timeReached(nowMs, pressStartMs + PRESS_MS)) {
             stopMomentaryPress();
             nextCheckMs = nowMs + CHECK_INTERVAL_MS;
+            pressCooldownUntilMs = nowMs + POST_PRESS_COOLDOWN_MS;
+            consecutiveMismatchCount = 0;
             ESP_LOGI(LOG_TAG, "Momentary press end");
         }
         return;
@@ -69,15 +75,23 @@ void MachinePowerSync::loop() {
     nextCheckMs = nowMs + CHECK_INTERVAL_MS;
 
     const bool powerLedOn = readPowerLed();
-    if (desiredOn) {
-        // GM ON (heater setpoint > 0): if LED has power -> no action, else press button to turn ON
-        if (!powerLedOn) {
-            startMomentaryPress(nowMs);
-        }
-    } else {
-        // GM OFF/STANDBY (heater setpoint == 0): if LED has power -> press button to turn OFF, else no action
-        if (powerLedOn) {
-            startMomentaryPress(nowMs);
-        }
+    const bool mismatch = desiredOn != powerLedOn;
+    if (!mismatch) {
+        consecutiveMismatchCount = 0;
+        return;
+    }
+
+    if (!timeReached(nowMs, pressCooldownUntilMs)) {
+        consecutiveMismatchCount = 0;
+        return;
+    }
+
+    if (consecutiveMismatchCount < 0xFF) {
+        ++consecutiveMismatchCount;
+    }
+
+    if (consecutiveMismatchCount >= MISMATCH_REQUIRED_COUNT) {
+        consecutiveMismatchCount = 0;
+        startMomentaryPress(nowMs);
     }
 }
